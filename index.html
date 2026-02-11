@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Will You Be My Valentine? 💘</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: "class" };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <style>
+    /* Apple-like liquid glass design system */
+    :root {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    [data-theme="light"] {
+      --bg-gradient: linear-gradient(160deg, #fef7f9 0%, #fce7f3 35%, #fad5e8 70%, #f8b4d4 100%);
+      --glass-bg: rgba(255, 255, 255, 0.45);
+      --glass-border: rgba(255, 255, 255, 0.85);
+      --glass-shadow: 0 8px 32px rgba(190, 24, 93, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+      --glass-shadow-lg: 0 24px 64px rgba(190, 24, 93, 0.15), 0 8px 24px rgba(0, 0, 0, 0.06);
+      --text-primary: #4c0519;
+      --text-secondary: #831843;
+      --accent-from: #e11d48;
+      --accent-to: #db2777;
+      --toggle-bg: rgba(255, 255, 255, 0.6);
+      --toggle-border: rgba(255, 255, 255, 0.9);
+      --toast-bg: rgba(236, 72, 153, 0.92);
+    }
+
+    [data-theme="dark"] {
+      --bg-gradient: linear-gradient(160deg, #1a0a10 0%, #2d1520 35%, #3d1a2a 70%, #4a1e32 100%);
+      --glass-bg: rgba(60, 20, 40, 0.4);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      --glass-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
+      --text-primary: #fdf2f8;
+      --text-secondary: #fbcfe8;
+      --accent-from: #f472b6;
+      --accent-to: #ec4899;
+      --toggle-bg: rgba(80, 30, 55, 0.5);
+      --toggle-border: rgba(255, 255, 255, 0.1);
+      --toast-bg: rgba(219, 39, 119, 0.92);
+    }
+
+    body {
+      background: var(--bg-gradient);
+      min-height: 100dvh;
+      transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Liquid glass panel (main card) */
+    .glass-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 28px;
+      box-shadow: var(--glass-shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      transition: box-shadow 0.4s ease, border-color 0.4s ease, background 0.4s ease;
+    }
+
+    [data-theme="dark"] .glass-panel {
+      box-shadow: var(--glass-shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    /* Glass control buttons (theme, music) */
+    .glass-toggle {
+      background: var(--toggle-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--toggle-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
+    }
+
+    [data-theme="dark"] .glass-toggle {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .glass-toggle:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    /* Primary CTA (YES / Share) – glass with gradient */
+    .glass-cta {
+      background: linear-gradient(180deg, var(--accent-from) 0%, var(--accent-to) 100%);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 4px 20px rgba(225, 29, 72, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+    }
+
+    .glass-cta:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 28px rgba(225, 29, 72, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+
+    .glass-cta:active {
+      transform: scale(0.98);
+    }
+
+    /* Secondary button (NO) – frosted glass */
+    .glass-secondary {
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      color: var(--text-secondary);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    [data-theme="dark"] .glass-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .glass-secondary:hover {
+      background: rgba(255, 255, 255, 0.65);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    [data-theme="dark"] .glass-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .headline {
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      font-weight: 700;
+      transition: color 0.4s ease;
+    }
+
+    .subtext {
+      color: var(--text-secondary);
+      transition: color 0.4s ease;
+    }
+
+    /* Floating hearts */
+    @keyframes float-heart {
+      0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.85; }
+      50% { transform: translateY(-16px) rotate(8deg); opacity: 1; }
+    }
+    .heart-float {
+      animation: float-heart 3.2s ease-in-out infinite;
+      position: absolute;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
+    }
+
+    /* Toast – liquid glass pill */
+    .glass-toast {
+      background: var(--toast-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 8px 32px rgba(190, 24, 93, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    @keyframes toast-in {
+      from { opacity: 0; transform: translate(-50%, -8px) scale(0.96); }
+      to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    }
+    .toast-enter {
+      animation: toast-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    /* NO button position transition */
+    #btnNo {
+      transition: left 0.2s cubic-bezier(0.4, 0, 0.2, 1), top 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased flex flex-col items-center justify-center min-h-dvh p-4 box-border" data-theme="light">
+  <!-- Theme toggle (top-right) -->
+  <button
+    id="themeToggle"
+    type="button"
+    class="glass-toggle fixed top-4 right-4 z-20 w-12 h-12 rounded-full flex items-center justify-center text-2xl focus:outline-none focus:ring-2 focus:ring-pink-400/50 focus:ring-offset-2 focus:ring-offset-transparent"
+    aria-label="Toggle dark/light mode"
+  >☀️</button>
+
+  <!-- Music toggle (top-left) -->
+  <button
+    id="musicToggle"
+    type="button"
+    class="glass-toggle fixed top-4 left-4 z-20 w-12 h-12 rounded-full flex items-center justify-center text-2xl focus:outline-none focus:ring-2 focus:ring-pink-400/50 focus:ring-offset-2 focus:ring-offset-transparent"
+    aria-label="Play or pause background music"
+  >🔇</button>
+
+  <audio id="bgMusic" loop preload="metadata">
+    <!-- Add your romantic.mp3 in the same folder when deploying -->
+    <source src="romantic.mp3" type="audio/mpeg" />
+  </audio>
+
+  <!-- Main container -->
+  <main id="mainContent" class="glass-panel p-8 sm:p-12 max-w-lg w-full text-center relative overflow-hidden">
+    <!-- Floating hearts (shown after YES) -->
+    <div id="floatingHearts" class="absolute inset-0 pointer-events-none hidden">
+      <span class="heart-float text-4xl" style="left: 10%; top: 20%; animation-delay: 0s;">💕</span>
+      <span class="heart-float text-3xl" style="left: 80%; top: 30%; animation-delay: 0.5s;">💖</span>
+      <span class="heart-float text-2xl" style="left: 20%; top: 70%; animation-delay: 1s;">💗</span>
+      <span class="heart-float text-3xl" style="left: 70%; top: 60%; animation-delay: 1.5s;">💘</span>
+      <span class="heart-float text-2xl" style="left: 50%; top: 15%; animation-delay: 2s;">💝</span>
+    </div>
+
+    <!-- Initial / question screen -->
+    <div id="questionScreen">
+      <h1 id="headline" class="headline text-2xl sm:text-4xl font-bold mb-2 leading-tight">
+        Will you be my Valentine? 💘
+      </h1>
+      <p id="teaseMessage" class="subtext text-lg sm:text-xl mb-8 min-h-[2rem]">
+        &nbsp;
+      </p>
+      <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+        <button
+          id="btnYes"
+          type="button"
+          class="glass-cta px-8 py-4 sm:px-10 sm:py-5 text-xl sm:text-2xl font-bold rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-transparent"
+        >
+          YES 💖
+        </button>
+        <button
+          id="btnNo"
+          type="button"
+          class="glass-secondary px-6 py-3 text-lg font-semibold rounded-2xl min-w-[120px] focus:outline-none focus:ring-2 focus:ring-pink-300/50 focus:ring-offset-2 focus:ring-offset-transparent"
+        >
+          NO ❌
+        </button>
+      </div>
+    </div>
+
+    <!-- Success screen (hidden by default) -->
+    <div id="successScreen" class="hidden">
+      <h2 class="headline text-2xl sm:text-4xl font-bold mb-4">
+        Yayyy 💕 You just made my day!
+      </h2>
+      <p class="subtext text-lg mb-6">
+        <span id="successName"></span>
+      </p>
+      <button
+        id="shareBtn"
+        type="button"
+        class="glass-cta px-6 py-3 rounded-2xl font-semibold focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-transparent"
+      >
+        Share 💌
+      </button>
+    </div>
+  </main>
+
+  <!-- Toast for "Link copied" -->
+  <div
+    id="toast"
+    class="glass-toast fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-white font-medium opacity-0 pointer-events-none transition-opacity duration-300 z-30"
+  >
+    Link copied! 💖
+  </div>
+
+  <script>
+    // --- Configuration & DOM ---
+    const teasePhrases = [
+      "Hey 😭 why you running?",
+      "You can't escape love 😈",
+      "Just click YES already 💕",
+      "Come back here! 🥺",
+      "The NO button is just for show 😏",
+      "Yes is this way 👉",
+      "Love always wins 💘",
+    ];
+    const musicEl = document.getElementById("bgMusic");
+    const themeToggle = document.getElementById("themeToggle");
+    const musicToggle = document.getElementById("musicToggle");
+    const headline = document.getElementById("headline");
+    const teaseMessage = document.getElementById("teaseMessage");
+    const btnYes = document.getElementById("btnYes");
+    const btnNo = document.getElementById("btnNo");
+    const questionScreen = document.getElementById("questionScreen");
+    const successScreen = document.getElementById("successScreen");
+    const floatingHearts = document.getElementById("floatingHearts");
+    const successNameEl = document.getElementById("successName");
+    const shareBtn = document.getElementById("shareBtn");
+    const toast = document.getElementById("toast");
+
+    // --- Name from URL ---
+    function getUrlParams() {
+      const params = new URLSearchParams(window.location.search);
+      return { name: params.get("name") || "" };
+    }
+    function applyName() {
+      const { name } = getUrlParams();
+      const displayName = name.trim();
+      if (displayName) {
+        headline.textContent = `${displayName}, will you be my Valentine? 💘`;
+      }
+      if (successNameEl) successNameEl.textContent = displayName ? `Thank you, ${displayName}!` : "";
+      return displayName;
+    }
+    applyName();
+
+    // --- Theme (dark / light) with localStorage ---
+    const THEME_KEY = "valentine-theme";
+    function getStoredTheme() {
+      return localStorage.getItem(THEME_KEY) || "light";
+    }
+    function setTheme(mode) {
+      document.documentElement.setAttribute("data-theme", mode);
+      document.documentElement.classList.toggle("dark", mode === "dark");
+      document.body.setAttribute("data-theme", mode);
+      themeToggle.textContent = mode === "dark" ? "☀️" : "🌙";
+      themeToggle.setAttribute("aria-label", mode === "dark" ? "Switch to light mode" : "Switch to dark mode");
+    }
+    function initTheme() {
+      const saved = getStoredTheme();
+      setTheme(saved);
+    }
+    themeToggle.addEventListener("click", () => {
+      const next = getStoredTheme() === "dark" ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, next);
+      setTheme(next);
+    });
+    initTheme();
+
+    // --- Background music (no autoplay) ---
+    musicToggle.addEventListener("click", () => {
+      if (musicEl.paused) {
+        musicEl.play().then(() => {
+          musicToggle.textContent = "🔊";
+          musicToggle.setAttribute("aria-label", "Pause music");
+        }).catch(() => {
+          musicToggle.textContent = "🔇";
+        });
+      } else {
+        musicEl.pause();
+        musicToggle.textContent = "🔇";
+        musicToggle.setAttribute("aria-label", "Play music");
+      }
+    });
+
+    // --- NO button: dodge within viewport ---
+    let lastTeaseIndex = -1;
+    function getRandomTease() {
+      let i = Math.floor(Math.random() * teasePhrases.length);
+      if (teasePhrases.length > 1 && i === lastTeaseIndex) {
+        i = (i + 1) % teasePhrases.length;
+      }
+      lastTeaseIndex = i;
+      return teasePhrases[i];
+    }
+    function moveNoButton() {
+      const rect = btnNo.getBoundingClientRect();
+      const padding = 24;
+      const maxX = window.innerWidth - rect.width - padding;
+      const maxY = window.innerHeight - rect.height - padding;
+      const minX = padding;
+      const minY = padding;
+      const x = minX + Math.random() * Math.max(0, maxX - minX);
+      const y = minY + Math.random() * Math.max(0, maxY - minY);
+      btnNo.style.position = "fixed";
+      btnNo.style.left = `${x}px`;
+      btnNo.style.top = `${y}px`;
+      btnNo.style.transform = "translate(0, 0)";
+      teaseMessage.textContent = getRandomTease();
+    }
+    // Dodge on hover (desktop) and on touch/click (mobile)
+    function scheduleMove() {
+      requestAnimationFrame(moveNoButton);
+    }
+    btnNo.addEventListener("mouseenter", scheduleMove);
+    btnNo.addEventListener("click", (e) => {
+      e.preventDefault();
+      scheduleMove();
+    });
+    // Touch: move before tap is registered so it "dodges"
+    btnNo.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      scheduleMove();
+    }, { passive: false });
+
+    // --- YES button: confetti + success screen ---
+    function runConfetti() {
+      if (typeof confetti !== "function") return;
+      const duration = 3 * 1000;
+      const end = Date.now() + duration;
+      const colors = ["#ec4899", "#f472b6", "#f9a8d4", "#fce7f3", "#be185d"];
+      (function frame() {
+        confetti({
+          particleCount: 3,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0.6, y: 0.8 },
+          colors,
+        });
+        confetti({
+          particleCount: 3,
+          angle: 120,
+          spread: 55,
+          origin: { x: 0.4, y: 0.8 },
+          colors,
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
+      confetti({
+        particleCount: 100,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors,
+      });
+    }
+    btnYes.addEventListener("click", () => {
+      runConfetti();
+      questionScreen.classList.add("hidden");
+      successScreen.classList.remove("hidden");
+      floatingHearts.classList.remove("hidden");
+    });
+
+    // --- Share: copy URL and show toast ---
+    shareBtn.addEventListener("click", async () => {
+      const url = window.location.href;
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.classList.remove("opacity-0");
+        toast.classList.add("toast-enter");
+        setTimeout(() => {
+          toast.classList.add("opacity-0");
+          toast.classList.remove("toast-enter");
+        }, 2000);
+      } catch {
+        toast.textContent = "Copy the URL from the address bar 💖";
+        toast.classList.remove("opacity-0");
+        toast.classList.add("toast-enter");
+        setTimeout(() => {
+          toast.classList.add("opacity-0");
+          toast.classList.remove("toast-enter");
+        }, 3000);
+      }
+    });
+  </script>
+</body>
+</html>
