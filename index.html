@@ -105,7 +105,7 @@
       transform: scale(0.98);
     }
 
-    /* Secondary button (NO) – frosted glass */
+    /* Secondary button (NO) – frosted glass; when dodging, high-contrast so it never hides */
     .glass-secondary {
       background: rgba(255, 255, 255, 0.5);
       backdrop-filter: blur(16px);
@@ -129,6 +129,31 @@
 
     [data-theme="dark"] .glass-secondary:hover {
       background: rgba(255, 255, 255, 0.12);
+    }
+
+    /* NO button when dodging – always visible on any background */
+    .glass-secondary.no-dodging {
+      z-index: 50;
+      background: #ffffff;
+      color: #831843;
+      border: 2px solid rgba(131, 24, 67, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.06);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    [data-theme="dark"] .glass-secondary.no-dodging {
+      background: #1f0a14;
+      color: #fbcfe8;
+      border: 2px solid rgba(251, 207, 232, 0.5);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+    .glass-secondary.no-dodging:hover {
+      background: #fff5f9;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.06);
+    }
+    [data-theme="dark"] .glass-secondary.no-dodging:hover {
+      background: #2d1520;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.12);
     }
 
     .headline {
@@ -355,17 +380,38 @@
     }
     function moveNoButton() {
       const rect = btnNo.getBoundingClientRect();
-      const padding = 24;
-      const maxX = window.innerWidth - rect.width - padding;
-      const maxY = window.innerHeight - rect.height - padding;
-      const minX = padding;
-      const minY = padding;
-      const x = minX + Math.random() * Math.max(0, maxX - minX);
-      const y = minY + Math.random() * Math.max(0, maxY - minY);
+      const padding = 20;
+      // Use visualViewport on mobile so the button stays in the visible screen (above keyboard, inside safe area)
+      const vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+      const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      const offsetX = window.visualViewport ? window.visualViewport.offsetLeft : 0;
+      const offsetY = window.visualViewport ? window.visualViewport.offsetTop : 0;
+      const minX = offsetX + padding;
+      const minY = offsetY + padding;
+      const maxX = offsetX + vw - rect.width - padding;
+      const maxY = offsetY + vh - rect.height - padding;
+      const rangeX = Math.max(0, maxX - minX);
+      const rangeY = Math.max(0, maxY - minY);
+      let x = minX + Math.random() * rangeX;
+      let y = minY + Math.random() * rangeY;
+      // Ensure we don't land in the same spot: move at least 60px away from current position
+      const currentLeft = rect.left;
+      const currentTop = rect.top;
+      const minJump = 60;
+      let tries = 0;
+      while (tries < 15) {
+        const dx = x - currentLeft;
+        const dy = y - currentTop;
+        if (Math.sqrt(dx * dx + dy * dy) >= minJump) break;
+        x = minX + Math.random() * rangeX;
+        y = minY + Math.random() * rangeY;
+        tries++;
+      }
       btnNo.style.position = "fixed";
       btnNo.style.left = `${x}px`;
       btnNo.style.top = `${y}px`;
       btnNo.style.transform = "translate(0, 0)";
+      btnNo.classList.add("no-dodging");
       teaseMessage.textContent = getRandomTease();
     }
     // Dodge on hover (desktop) and on touch/click (mobile)
@@ -377,7 +423,7 @@
       e.preventDefault();
       scheduleMove();
     });
-    // Touch: move before tap is registered so it "dodges"
+    // Touch: move on touchstart so it dodges before tap (mobile)
     btnNo.addEventListener("touchstart", (e) => {
       e.preventDefault();
       scheduleMove();
